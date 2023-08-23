@@ -1,44 +1,48 @@
 FROM ubuntu:18.04
 
-RUN apt-get update
-
-RUN apt-get install -y curl apt-transport-https lsb-release gnupg
 RUN curl -sL https://packages.microsoft.com/keys/microsoft.asc | \
         gpg --dearmor | \
         tee /etc/apt/trusted.gpg.d/microsoft.asc.gpg > /dev/null
+
+RUN apt-get update && apt-get install -y apt-transport-https lsb-release gnupg && rm -rf /var/lib/apt/lists/*
+
 RUN echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" | \
     tee /etc/apt/sources.list.d/azure-cli.list
-RUN apt-get update
-RUN apt-get install -y azure-cli
-RUN apt-get install -y wget
 
-RUN az extension add --name azure-devops
-
-RUN apt-get update
-RUN apt-get install -y --fix-missing \
+RUN apt-get update && \
+    apt-get install -y azure-cli && \
+    apt-get install -y --fix-missing \
+    attr \
     autoconf \
     autoconf-archive \
     automake \
     build-essential \
+    cmake \
+    cryptsetup-bin \
+    curl \
+    debhelper \
     doxygen \
+    g++-8 \
+    gcc-8 \
+    git \
+    gnulib \
+    libcap-dev \
+    libcurl4-openssl-dev \
+    libgcrypt-dev \
+    libjsoncpp-dev \
     libssl-dev \
     libtool \
-    libgcrypt-dev \
-    gnulib \
-    pkg-config \
-    libjsoncpp-dev \
-    gcc-8 \
-    g++-8 \
-    attr \
-    squashfs-tools \
-    cryptsetup-bin \
-    libcap-dev \
-    python-pip \
-    libcurl4-openssl-dev \
     libtspi-dev \
+    pkg-config \
+    python-pip \
     rpm \
-    debhelper \
-    zip
+    squashfs-tools \
+    wget \
+    zip \
+    software-properties-common && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN az extension add --name azure-devops
 
 RUN cp /usr/lib/x86_64-linux-gnu/libjsoncpp.a /usr/local/lib && \
     ls /usr/local/lib/libjsoncpp.a
@@ -66,12 +70,6 @@ RUN export CC=gcc && export CXX=g++ && \
     # Cleanup
     rm -rf /usr/src/tpm2-tss
 
-# Install CMake
-RUN apt-get install -y cmake
-
-# Install git 
-RUN apt-get update
-RUN apt-get install -y git
 
 # Install Google Test
 RUN git clone https://github.com/google/googletest.git /src/googletest && \
@@ -113,6 +111,3 @@ RUN wget --quiet https://www.libarchive.org/downloads/libarchive-3.4.3.tar.gz &&
     ./configure && make && make install && \
     cd /usr/src && rm -rf libarchive-3.4.3
 
-RUN apt-get update && \
-    apt-get install -y software-properties-common && \
-    rm -rf /var/lib/apt/lists/*
